@@ -3,9 +3,11 @@ const mongoose = require('mongoose');
 const hotelRoutes = require('./src/routes/hotelRoutes');
 const authRoutes = require('./src/routes/authRoutes');
 const roomRoutes = require('./src/routes/roomRoutes')
+const userRoutes = require('./src/routes/userRoutes');
 const reservationRoutes = require('./src/routes/reservationRoutes');
 const orderRoutes = require('./src/routes/orderRoutes');
 const reviewRoutes = require('./src/routes/reviewRoutes');
+const systemRoutes = require('./src/routes/systemRoutes');
 const { engine } = require('express-handlebars'); // Sử dụng destructuring để lấy engine từ express-handlebars
 const path = require('path');
 
@@ -64,10 +66,14 @@ app.use('/api/rooms', roomRoutes);
 app.use('/api/reservations', reservationRoutes);
 
 //app.use('/api', paymentRoutes);
+app.use('/api/users', userRoutes);
 
 app.use('/api/orders', orderRoutes); // Đăng ký routes order
 
-app.use('/uploads/reviews', express.static('uploads'));
+app.use('/api/systems', systemRoutes);
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 app.use('/api/reviews', reviewRoutes);
 

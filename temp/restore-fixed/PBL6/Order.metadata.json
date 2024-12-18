@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"transId":{"$numberInt":"1"}},"name":"transId_1","background":true,"unique":true}],"uuid":"19da824e10994f088a997112761b1b72","collectionName":"Order","type":"collection"}

@@ -19,7 +19,7 @@ const reviewSchema = new mongoose.Schema({
     }, // Điểm đánh giá (1 - 5 sao)
     comment: {
         type: String,
-        required: true
+        // required: true
     }, // Nội dung bình luận
     createdAt: {
         type: Date,

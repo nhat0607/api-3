@@ -8,4 +8,6 @@ const { protect, authorize } = require('../middlewares/authMiddleware');
 router.post('/create', protect, orderController.createOrder);
 router.post('/callback', orderController.handleZaloPayCallback);
 
+router.get('/order/:hotelId', orderController.getOrderByHotelId);
+
 module.exports = router;

@@ -3,6 +3,7 @@ const CryptoJS = require('crypto-js');
 const moment = require('moment');
 const Reservation = require('../models/reservation'); // Model đặt phòng
 const Order = require('../models/order'); // Model order bạn đã tạo
+const mongoose = require('mongoose');
 
 // APP INFO
 const config = {
@@ -29,7 +30,7 @@ exports.createOrder = async (req, res) => {
         // Tạo thông tin đơn hàng
         const transID = Math.floor(Math.random() * 1000000);
         const embed_data = { reservationId }; // Gắn ID đặt phòng vào embed_data để xử lý callback
-        const items = [
+        const items = [ 
             {
                 room_name: reservation.room.name, // Lấy tên phòng
                 checkIn: reservation.checkInDate,
@@ -145,4 +146,28 @@ exports.handleZaloPayCallback = async (req, res) => {
 
     // Trả kết quả về Zalopay
     res.json(result);
+};
+
+exports.getOrderByHotelId = async (req, res) => {
+    const { hotelId } = req.params;
+    try {
+        const orders = await Order.find({ status: { $in: ['paid', 'pending'] } })
+            .populate({
+                path: 'reservation', // Populate reservation trong Order
+                populate: {
+                    path: 'room', // Populate room trong Reservation
+                    match: { hotel : new mongoose.Types.ObjectId(hotelId) }, 
+                },
+            })
+            .exec();     
+        if (orders.length === 0) {
+            return res.status(404).json({ message: "No bookings found for this hotel" });
+        }   
+        const filteredOrders = orders.filter(order => order.reservation && order.reservation.room);
+
+        res.status(200).json(filteredOrders);
+    } catch (error) {
+        console.error('Error fetching orders by hotelId and status:', error);
+        throw new Error('Failed to fetch orders');
+    }
 };

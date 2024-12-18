@@ -1,7 +1,9 @@
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
-
+const Hotel = require('../models/hotel'); // Thêm import Hotel model
+// const mail = require('nodemailer');
 // Đăng ký người dùng
+
 exports.register = async (req, res) => {
     const { name, email, password, country, phonenumber, role } = req.body;
 
@@ -45,6 +47,87 @@ exports.register = async (req, res) => {
     }
 };
 
+// Đăng ký người dùng
+exports.registerhotel = async (req, res) => {
+    const { name, email, password, 
+        country, 
+        phonenumber, 
+        role, hotel } = req.body;
+        // console.log(name);
+        // console.log(email);
+        // console.log(password);
+        // console.log(role);
+        // console.log(hotel);
+        // console.log(hotel.name);
+        // console.log(hotel.location);
+
+    try {
+        // Kiểm tra xem email đã tồn tại chưa
+        console.log('test 1');
+        const userExists = await User.findOne({ email });
+        console.log(userExists);
+        if (userExists) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email đã tồn tại',
+            });
+        }
+        console.log('test 2');
+        // Kiểm tra thông tin khách sạn nếu vai trò là hotelOwner
+        if (role === 'hotelOwner' && (!hotel || !hotel.name || !hotel.location)) {
+            console.log('success');
+            return res.status(400).json({
+                success: false,
+                message: 'Thông tin khách sạn là bắt buộc đối với vai trò hotelOwner.',
+            });
+
+        }
+        console.log('test 3');
+        // Tạo người dùng mới
+        const user = await User.create({
+            name,
+            email,
+            password,
+            country,
+            phonenumber,
+            role: role || 'customer', // Nếu không có vai trò, mặc định là 'customer'
+        });
+        console.log('test 4');
+        console.log(user);
+        let newHotel = null;
+        if (role === 'hotelOwner') {
+            // Tạo khách sạn nếu vai trò là hotelOwner
+            newHotel = await Hotel.create({
+                name: hotel.name,
+                location: hotel.location,
+                rating: hotel.rating || 0,
+                owner: user._id, // Gắn liên kết với userId
+                amenities: hotel.amenities || [],
+            });
+            console.log(newHotel);
+        }
+
+        // Tạo JWT token
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+            expiresIn: process.env.JWT_EXPIRE,
+        });
+
+        // Trả về thông tin người dùng và token
+        res.status(201).json({
+            success: true,
+            token,
+            user,
+            hotel: newHotel, // Trả về thông tin khách sạn (nếu có)
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi khi đăng ký',
+            error: error.message,
+        });
+    }
+};
+
 // Đăng nhập người dùng
 exports.login = async (req, res) => {
     const { email, password } = req.body;
@@ -53,7 +136,7 @@ exports.login = async (req, res) => {
         // Kiểm tra xem người dùng có tồn tại hay không
         const user = await User.findOne({ email }).select('+password');
         if (!user) {
-            return res.status(400).json({
+            return res.status(402).json({
                 success: false,
                 message: 'Email hoặc mật khẩu không đúng',
             });
@@ -62,7 +145,7 @@ exports.login = async (req, res) => {
         // Kiểm tra mật khẩu
         const isMatch = await user.matchPassword(password);
         if (!isMatch) {
-            return res.status(400).json({
+            return res.status(403).json({
                 success: false,
                 message: 'Email hoặc mật khẩu không đúng',
             });
