@@ -62,7 +62,6 @@ exports.registerhotel = async (req, res) => {
         // console.log(hotel.location);
 
     try {
-        // Kiểm tra xem email đã tồn tại chưa
         console.log('test 1');
         const userExists = await User.findOne({ email });
         console.log(userExists);
@@ -73,7 +72,6 @@ exports.registerhotel = async (req, res) => {
             });
         }
         console.log('test 2');
-        // Kiểm tra thông tin khách sạn nếu vai trò là hotelOwner
         if (role === 'hotelOwner' && (!hotel || !hotel.name || !hotel.location)) {
             console.log('success');
             return res.status(400).json({
@@ -83,41 +81,38 @@ exports.registerhotel = async (req, res) => {
 
         }
         console.log('test 3');
-        // Tạo người dùng mới
         const user = await User.create({
             name,
             email,
             password,
             country,
             phonenumber,
-            role: role || 'customer', // Nếu không có vai trò, mặc định là 'customer'
+            role: role || 'customer',
         });
         console.log('test 4');
         console.log(user);
         let newHotel = null;
         if (role === 'hotelOwner') {
-            // Tạo khách sạn nếu vai trò là hotelOwner
+
             newHotel = await Hotel.create({
                 name: hotel.name,
                 location: hotel.location,
                 rating: hotel.rating || 0,
-                owner: user._id, // Gắn liên kết với userId
+                owner: user._id, 
                 amenities: hotel.amenities || [],
             });
             console.log(newHotel);
         }
 
-        // Tạo JWT token
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-            expiresIn: process.env.JWT_EXPIRE,
-        });
+        // const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+        //     expiresIn: process.env.JWT_EXPIRE,
+        // });
 
-        // Trả về thông tin người dùng và token
         res.status(201).json({
             success: true,
             token,
             user,
-            hotel: newHotel, // Trả về thông tin khách sạn (nếu có)
+            hotel: newHotel, 
         });
     } catch (error) {
         res.status(500).json({

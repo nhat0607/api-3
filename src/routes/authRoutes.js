@@ -8,7 +8,7 @@ router.post('/register', authController.register);
 
 router.post(
     '/register-hotel',
-    sendEmailMiddleware, // Sử dụng middleware đã chỉnh sửa
+    sendEmailMiddleware,
     authController.registerhotel
 );
 
