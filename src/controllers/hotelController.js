@@ -2,7 +2,8 @@ const Hotel = require('../models/hotel');
 const express = require('express');
 const Room = require('../models/room');
 const mongoose = require('mongoose');
-const router = express.Router();
+
+
 // Lấy tất cả khách sạn
 exports.getAllHotels = async (req, res) => {
     try {
@@ -33,6 +34,49 @@ exports.getHotelsByOwner = async (req, res) => {
       res.status(500).json({ message: 'Server Error' });
     }
   };
+
+exports.getHotelDetails = async (req, res) => {
+    try {
+        // Lấy ID khách sạn từ tham số đường dẫn
+        const hotelId = req.params.id;
+
+        // Tìm khách sạn trong cơ sở dữ liệu và lấy các thông tin chi tiết
+        const hotel = await Hotel.findById(hotelId)
+            .populate({
+                path: 'rooms', // Liên kết với các phòng trong khách sạn
+                select: '', // Lấy toàn bộ thông tin của các phòng
+                populate: {
+                    path: 'reviews',  // Nếu muốn lấy các thông tin đánh giá từ mô hình Review
+                    select: 'rating comment',  // Chỉ lấy rating và comment từ Review
+                },
+            });
+        console.log('Hotel rooms:', hotel.rooms);
+
+        // Nếu khách sạn không tồn tại
+        if (!hotel) {
+            return res.status(404).json({
+                success: false,
+                message: 'Hotel not found',
+            });
+        }
+        // Kiểm tra danh sách các phòng liên kết với khách sạn
+        // const rooms = await Room.find({ hotel: hotelId });
+        // console.log('Rooms linked to this hotel in Room collection:', rooms);
+
+        // Trả về chi tiết khách sạn cùng với các phòng
+        res.status(200).json({
+            success: true,
+            data: hotel,
+        });
+    } catch (error) {
+        console.error('Error fetching hotel details:', error.message);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
 // Thêm một khách sạn mới
 exports.createHotel = async (req, res) => {
     try {
@@ -74,12 +118,11 @@ exports.createHotel = async (req, res) => {
 // Cập nhật khách sạn theo ID
 exports.updateHotel = async (req, res) => {
     const { id } = req.params;
-    // console.log(id);
 
     try {
         // Tìm khách sạn theo ID
         const hotel = await Hotel.findById(id);
-        // console.log(hotel);
+
         if (!hotel) {
             return res.status(404).json({
                 success: false,
@@ -97,7 +140,7 @@ exports.updateHotel = async (req, res) => {
 
         // Cập nhật thông tin khách sạn
         const updatedHotel = await Hotel.findByIdAndUpdate(id, req.body, { new: true });
-        // console.log(updatedHotel);
+
         res.status(200).json({
             success: true,
             data: updatedHotel,

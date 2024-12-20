@@ -35,7 +35,7 @@ app.use((err, req, res, next) => {
 // Cấu hình CORS
 app.use(cors({
     origin: 'http://localhost:5173', // Chỉ cho phép frontend của bạn
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Các method được phép
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Các method được phép
     credentials: true, // Nếu frontend gửi kèm cookie
 }));
 
@@ -74,6 +74,7 @@ app.use('/api/systems', systemRoutes);
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+app.use('/uploads/reviews', express.static('uploads'));
 
 app.use('/api/reviews', reviewRoutes);
 
